@@ -1,0 +1,55 @@
+{% extends 'search/base.html' %}
+
+{% block content %}
+<div class="row mt-4">
+    <div class="col-md-8 offset-md-2">
+        <!-- Additional Back Button in Content -->
+        <div class="mb-3">
+            <a href="{% url 'search:home' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-arrow-left me-2"></i>Back to Home
+            </a>
+        </div>
+        
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">Upload New Document</h5>
+            </div>
+            <div class="card-body">
+                {% if message %}
+                    <div class="alert alert-success">{{ message }}</div>
+                {% endif %}
+                {% if error %}
+                    <div class="alert alert-danger">{{ error }}</div>
+                {% endif %}
+
+                <p class="text-muted">Upload a document file to add it to the search engine. Supported formats: <strong>.txt</strong> and <strong>.pdf</strong> (text-based PDFs only). The system will automatically extract text and index the document.</p>
+                
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Document Title</label>
+                        <input type="text" name="title" class="form-control" required placeholder="e.g. New Agricultural Policy">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Language</label>
+                        <select name="language" class="form-select">
+                            <option value="en">English</option>
+                            <option value="am">Amharic</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Document File</label>
+                        <input type="file" name="document_file" class="form-control" accept=".txt,.pdf" required>
+                        <small class="form-text text-muted">Supported formats: .txt, .pdf (Max 10MB). Note: PDF must be text-based, not scanned images.</small>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">Upload & Index Document</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

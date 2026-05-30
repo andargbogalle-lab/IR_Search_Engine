@@ -1,0 +1,100 @@
+{% extends 'search/base.html' %}
+
+{% block title %}Register - IR Search Engine{% endblock %}
+
+{% block content %}
+<div class="main-container fade-in" style="max-width: 500px; margin-top: 4rem;">
+    <!-- Additional Back Button in Content -->
+    <div class="mb-3">
+        <a href="javascript:history.back()" class="btn btn-outline-secondary btn-sm">
+            <i class="fas fa-arrow-left me-2"></i>Back
+        </a>
+    </div>
+    
+    <div class="text-center mb-4">
+        <div class="mb-3">
+            <i class="fas fa-user-plus fa-4x" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"></i>
+        </div>
+        <h2 class="fw-bold mb-2">Create Account</h2>
+        <p class="text-muted">Join us to upload documents and track your searches</p>
+    </div>
+
+    {% if form.errors %}
+    <div class="alert alert-danger">
+        <i class="fas fa-exclamation-circle me-2"></i>
+        <strong>Registration failed!</strong> Please fix the errors below.
+        <ul class="mb-0 mt-2">
+            {% for field, errors in form.errors.items %}
+                {% for error in errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="mb-4">
+            <label for="id_username" class="form-label fw-semibold">
+                <i class="fas fa-user me-2"></i>Username
+            </label>
+            <input type="text" 
+                   name="username" 
+                   id="id_username" 
+                   class="form-control form-control-lg" 
+                   placeholder="Choose a username"
+                   value="{{ form.username.value|default:'' }}"
+                   required 
+                   autofocus>
+            {% if form.username.help_text %}
+            <small class="form-text text-muted">{{ form.username.help_text }}</small>
+            {% endif %}
+        </div>
+
+        <div class="mb-4">
+            <label for="id_password1" class="form-label fw-semibold">
+                <i class="fas fa-lock me-2"></i>Password
+            </label>
+            <input type="password" 
+                   name="password1" 
+                   id="id_password1" 
+                   class="form-control form-control-lg" 
+                   placeholder="Create a strong password"
+                   required>
+            {% if form.password1.help_text %}
+            <small class="form-text text-muted">{{ form.password1.help_text }}</small>
+            {% endif %}
+        </div>
+
+        <div class="mb-4">
+            <label for="id_password2" class="form-label fw-semibold">
+                <i class="fas fa-lock me-2"></i>Confirm Password
+            </label>
+            <input type="password" 
+                   name="password2" 
+                   id="id_password2" 
+                   class="form-control form-control-lg" 
+                   placeholder="Re-enter your password"
+                   required>
+            {% if form.password2.help_text %}
+            <small class="form-text text-muted">{{ form.password2.help_text }}</small>
+            {% endif %}
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 btn-lg mb-3">
+            <i class="fas fa-user-plus me-2"></i>Create Account
+        </button>
+
+        <div class="text-center">
+            <p class="text-muted mb-0">
+                Already have an account? 
+                <a href="{% url 'login' %}" class="text-decoration-none fw-semibold" style="color: var(--primary-color);">
+                    Login here
+                </a>
+            </p>
+        </div>
+    </form>
+</div>
+{% endblock %}

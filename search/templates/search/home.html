@@ -1,0 +1,241 @@
+{% extends 'search/base.html' %}
+
+{% block content %}
+<div class="main-container fade-in" style="margin-top: 4rem;">
+    <div class="text-center mb-5">
+        <h1 class="display-3 fw-bold mb-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+            <i class="fas fa-search"></i> Smart Search
+        </h1>
+        <p class="lead text-muted mb-4">
+            Discover information across English and Amharic documents with advanced IR algorithms
+        </p>
+    </div>
+
+    <form action="{% url 'search:results' %}" method="get" class="mb-5">
+        <!-- Search Input -->
+        <div class="row justify-content-center mb-4">
+            <div class="col-md-10">
+                <div class="input-group input-group-lg shadow-sm">
+                    <span class="input-group-text bg-white border-end-0" style="border-radius: 10px 0 0 10px;">
+                        <i class="fas fa-search text-primary"></i>
+                    </span>
+                    <input type="text" 
+                           name="q" 
+                           id="search-input" 
+                           class="form-control border-start-0 border-end-0" 
+                           placeholder="What are you looking for?" 
+                           required 
+                           autofocus 
+                           autocomplete="off"
+                           style="border-left: none !important; border-right: none !important;">
+                    <button class="btn btn-primary px-5" type="submit" style="border-radius: 0 10px 10px 0;">
+                        <i class="fas fa-arrow-right me-2"></i>Search
+                    </button>
+                </div>
+                
+                <!-- Autocomplete suggestions -->
+                <div id="autocomplete-results" class="list-group position-absolute w-75 start-50 translate-middle-x mt-1" style="display: none; z-index: 1000; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"></div>
+            </div>
+        </div>
+        
+        <!-- Search Options -->
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="card border-0 shadow-sm" style="border-radius: 15px; background: rgba(255,255,255,0.9);">
+                    <div class="card-body p-4">
+                        <div class="row g-4">
+                            <!-- Ranking Model -->
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold text-secondary mb-3">
+                                    <i class="fas fa-brain me-2"></i>Ranking Model
+                                </label>
+                                <div class="d-grid gap-2">
+                                    <input type="radio" class="btn-check" name="model" id="vsm" value="vsm" checked>
+                                    <label class="btn btn-outline-primary" for="vsm" style="border-radius: 10px;">
+                                        <i class="fas fa-vector-square me-2"></i>TF-IDF (VSM)
+                                    </label>
+                                  
+                                    <input type="radio" class="btn-check" name="model" id="bm25" value="bm25">
+                                    <label class="btn btn-outline-primary" for="bm25" style="border-radius: 10px;">
+                                        <i class="fas fa-chart-line me-2"></i>Okapi BM25
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <!-- Language -->
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold text-secondary mb-3">
+                                    <i class="fas fa-language me-2"></i>Language
+                                </label>
+                                <div class="d-grid gap-2">
+                                    <input type="radio" class="btn-check" name="lang" id="en" value="en" checked>
+                                    <label class="btn btn-outline-success" for="en" style="border-radius: 10px;">
+                                        <i class="fas fa-flag-usa me-2"></i>English
+                                    </label>
+                                  
+                                    <input type="radio" class="btn-check" name="lang" id="am" value="am">
+                                    <label class="btn btn-outline-success" for="am" style="border-radius: 10px;">
+                                        <i class="fas fa-globe me-2"></i>Amharic (አማርኛ)
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <!-- Advanced Options -->
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold text-secondary mb-3">
+                                    <i class="fas fa-sliders-h me-2"></i>Advanced Options
+                                </label>
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" name="expand" value="true" id="expand" style="width: 3rem; height: 1.5rem;">
+                                    <label class="form-check-label ms-2" for="expand">
+                                        <i class="fas fa-expand-arrows-alt me-2"></i>Query Expansion
+                                    </label>
+                                </div>
+                                <div class="alert alert-info mb-0 py-2 px-3" style="font-size: 0.85rem; border-radius: 8px;">
+                                    <i class="fas fa-info-circle me-2"></i>Improves recall for sparse results
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <!-- Statistics -->
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-10">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100" style="border-radius: 15px; background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));">
+                        <div class="card-body text-center p-4">
+                            <i class="fas fa-file-alt fa-3x mb-3" style="color: #6366f1;"></i>
+                            <h3 class="fw-bold mb-1">{{ doc_count }}</h3>
+                            <p class="text-muted mb-0">Indexed Documents</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100" style="border-radius: 15px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1));">
+                        <div class="card-body text-center p-4">
+                            <i class="fas fa-language fa-3x mb-3" style="color: #10b981;"></i>
+                            <h3 class="fw-bold mb-1">2</h3>
+                            <p class="text-muted mb-0">Languages Supported</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100" style="border-radius: 15px; background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(251, 146, 60, 0.1));">
+                        <div class="card-body text-center p-4">
+                            <i class="fas fa-bolt fa-3x mb-3" style="color: #f59e0b;"></i>
+                            <h3 class="fw-bold mb-1">Fast</h3>
+                            <p class="text-muted mb-0">Lightning Search</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if popular_queries %}
+    <div class="row justify-content-center mt-4">
+        <div class="col-md-10">
+            <div class="text-center">
+                <p class="text-muted small mb-3">
+                    <i class="fas fa-fire me-2"></i>Popular searches:
+                </p>
+                <div class="d-flex justify-content-center gap-2 flex-wrap">
+                    {% for query in popular_queries %}
+                    <a href="{% url 'search:results' %}?q={{ query.query_text|urlencode }}" 
+                       class="badge bg-light text-dark text-decoration-none px-3 py-2" 
+                       style="border-radius: 20px; font-weight: 500; transition: all 0.3s ease;">
+                        <i class="fas fa-search me-1"></i>{{ query.query_text }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if recent_searches %}
+    <div class="row justify-content-center mt-4">
+        <div class="col-md-10">
+            <div class="text-center">
+                <p class="text-muted small mb-3">
+                    <i class="fas fa-history me-2"></i>Your recent searches:
+                </p>
+                <div class="d-flex justify-content-center gap-2 flex-wrap">
+                    {% for search in recent_searches %}
+                    <a href="{% url 'search:results' %}?q={{ search.query_text|urlencode }}&model={{ search.model_used }}&lang={{ search.language }}" 
+                       class="badge bg-secondary text-decoration-none px-3 py-2" 
+                       style="border-radius: 20px; font-weight: 500; transition: all 0.3s ease;">
+                        <i class="fas fa-clock me-1"></i>{{ search.query_text }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+// Autocomplete functionality
+const searchInput = document.getElementById('search-input');
+const autocompleteResults = document.getElementById('autocomplete-results');
+
+let debounceTimer;
+searchInput.addEventListener('input', function() {
+    clearTimeout(debounceTimer);
+    const query = this.value.trim();
+    
+    if (query.length < 2) {
+        autocompleteResults.style.display = 'none';
+        return;
+    }
+    
+    debounceTimer = setTimeout(() => {
+        fetch(`{% url 'search:autocomplete' %}?q=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.suggestions && data.suggestions.length > 0) {
+                    autocompleteResults.innerHTML = data.suggestions.map(s => 
+                        `<a href="#" class="list-group-item list-group-item-action border-0 py-3" onclick="selectSuggestion('${s}'); return false;">
+                            <i class="fas fa-search me-2 text-primary"></i>${s}
+                        </a>`
+                    ).join('');
+                    autocompleteResults.style.display = 'block';
+                } else {
+                    autocompleteResults.style.display = 'none';
+                }
+            });
+    }, 300);
+});
+
+function selectSuggestion(text) {
+    searchInput.value = text;
+    autocompleteResults.style.display = 'none';
+    searchInput.form.submit();
+}
+
+// Hide autocomplete when clicking outside
+document.addEventListener('click', function(e) {
+    if (!searchInput.contains(e.target) && !autocompleteResults.contains(e.target)) {
+        autocompleteResults.style.display = 'none';
+    }
+});
+
+// Add hover effect to badges
+document.querySelectorAll('.badge').forEach(badge => {
+    badge.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-2px)';
+        this.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
+    });
+    badge.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateY(0)';
+        this.style.boxShadow = 'none';
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,165 @@
+{% extends 'search/base.html' %}
+
+{% block content %}
+<div class="main-container fade-in">
+    <!-- Additional Back Button in Content -->
+    <div class="mb-3">
+        <a href="{% url 'search:home' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="fas fa-arrow-left me-2"></i>Back to Home
+        </a>
+    </div>
+    
+    <!-- Search Bar -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <form action="{% url 'search:results' %}" method="get" class="d-flex gap-2">
+                <div class="input-group flex-grow-1">
+                    <span class="input-group-text bg-white">
+                        <i class="fas fa-search text-primary"></i>
+                    </span>
+                    <input type="text" name="q" class="form-control" value="{{ query }}" required placeholder="Search...">
+                    <input type="hidden" name="model" value="{{ model_type }}">
+                    <input type="hidden" name="lang" value="{{ language }}">
+                    {% if use_expansion %}<input type="hidden" name="expand" value="true">{% endif %}
+                    <button class="btn btn-primary px-4" type="submit">
+                        <i class="fas fa-search me-2"></i>Search
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Spell Correction Alert -->
+    {% if corrected_query %}
+    <div class="alert alert-info fade-in">
+        <i class="fas fa-spell-check me-2"></i>
+        Showing results for <strong>{{ corrected_query }}</strong>
+        <br><small>Search instead for <a href="{% url 'search:results' %}?q={{ query|urlencode }}&model={{ model_type }}&lang={{ language }}" class="alert-link">{{ query }}</a></small>
+    </div>
+    {% endif %}
+    
+    {% if query %}
+        <!-- Results Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+            <div>
+                <h5 class="mb-1">
+                    <i class="fas fa-file-alt text-primary me-2"></i>
+                    Found <strong class="text-primary">{{ result_count }}</strong> results
+                </h5>
+                <p class="text-muted small mb-0">
+                    <i class="fas fa-brain me-1"></i>{{ model_name }} | 
+                    <i class="fas fa-language me-1"></i>{{ language|upper }} | 
+                    <i class="fas fa-clock me-1"></i>{{ execution_time }}s
+                    {% if from_cache %}<span class="badge bg-success ms-2"><i class="fas fa-bolt me-1"></i>Cached</span>{% endif %}
+                </p>
+            </div>
+            <div>
+                {% if not use_expansion and result_count < 5 %}
+                <a href="{% url 'search:results' %}?q={{ query|urlencode }}&model={{ model_type }}&lang={{ language }}&expand=true" 
+                   class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-expand-arrows-alt me-2"></i>Try Query Expansion
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Results -->
+        {% if page_obj %}
+            {% for item in page_obj %}
+            <div class="result-item fade-in" style="animation-delay: {{ forloop.counter0|add:'0' }}00ms;">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <a href="{% url 'search:document_detail' item.document.id %}" class="result-title">
+                        <i class="fas fa-file-text me-2"></i>{{ item.document.title }}
+                    </a>
+                    <span class="score-badge">
+                        <i class="fas fa-star me-1"></i>{{ item.score|floatformat:3 }}
+                    </span>
+                </div>
+                <div class="mb-2">
+                    <span class="badge bg-light text-dark me-2">
+                        <i class="fas fa-hashtag me-1"></i>ID: {{ item.document.id }}
+                    </span>
+                    <span class="lang-badge me-2">
+                        <i class="fas fa-language me-1"></i>{{ item.document.language|upper }}
+                    </span>
+                    {% if item.document.pub_date %}
+                    <span class="badge bg-light text-dark me-2">
+                        <i class="fas fa-calendar me-1"></i>{{ item.document.pub_date }}
+                    </span>
+                    {% endif %}
+                    <span class="badge bg-light text-dark">
+                        <i class="fas fa-eye me-1"></i>{{ item.document.view_count }} views
+                    </span>
+                </div>
+                <p class="snippet">{{ item.snippet|safe }}</p>
+            </div>
+            {% endfor %}
+            
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <nav aria-label="Search results pagination" class="mt-5">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?q={{ query|urlencode }}&model={{ model_type }}&lang={{ language }}&page={{ page_obj.previous_page_number }}{% if use_expansion %}&expand=true{% endif %}">
+                            <i class="fas fa-chevron-left me-1"></i>Previous
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?q={{ query|urlencode }}&model={{ model_type }}&lang={{ language }}&page={{ num }}{% if use_expansion %}&expand=true{% endif %}">
+                                {{ num }}
+                            </a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?q={{ query|urlencode }}&model={{ model_type }}&lang={{ language }}&page={{ page_obj.next_page_number }}{% if use_expansion %}&expand=true{% endif %}">
+                            Next<i class="fas fa-chevron-right ms-1"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-search fa-4x text-muted mb-4"></i>
+                <h4 class="text-muted">No results found</h4>
+                <p class="text-muted">
+                    No results found for "<strong>{{ query }}</strong>" in {{ language|upper }}.
+                </p>
+                <div class="mt-4">
+                    <a href="{% url 'search:home' %}" class="btn btn-primary">
+                        <i class="fas fa-home me-2"></i>Back to Home
+                    </a>
+                    {% if not use_expansion %}
+                    <a href="{% url 'search:results' %}?q={{ query|urlencode }}&model={{ model_type }}&lang={{ language }}&expand=true" 
+                       class="btn btn-outline-primary">
+                        <i class="fas fa-expand-arrows-alt me-2"></i>Try Query Expansion
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>Please enter a search query.
+        </div>
+    {% endif %}
+</div>
+
+<style>
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
+{% endblock %}

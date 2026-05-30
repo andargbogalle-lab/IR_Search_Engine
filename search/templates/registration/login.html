@@ -1,0 +1,87 @@
+{% extends 'search/base.html' %}
+
+{% block title %}Login - IR Search Engine{% endblock %}
+
+{% block content %}
+<div class="main-container fade-in" style="max-width: 500px; margin-top: 4rem;">
+    <!-- Additional Back Button in Content -->
+    <div class="mb-3">
+        <a href="javascript:history.back()" class="btn btn-outline-secondary btn-sm">
+            <i class="fas fa-arrow-left me-2"></i>Back
+        </a>
+    </div>
+    
+    <div class="text-center mb-4">
+        <div class="mb-3">
+            <i class="fas fa-sign-in-alt fa-4x" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"></i>
+        </div>
+        <h2 class="fw-bold mb-2">Welcome Back!</h2>
+        <p class="text-muted">Login to access your search history and upload documents</p>
+    </div>
+
+    {% if form.errors %}
+    <div class="alert alert-danger">
+        <i class="fas fa-exclamation-circle me-2"></i>
+        <strong>Login failed!</strong> Please check your username and password.
+    </div>
+    {% endif %}
+
+    {% if next %}
+        {% if user.is_authenticated %}
+        <div class="alert alert-warning">
+            <i class="fas fa-info-circle me-2"></i>
+            Your account doesn't have access to this page. Please login with an account that has access.
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-lock me-2"></i>
+            Please login to see this page.
+        </div>
+        {% endif %}
+    {% endif %}
+
+    <form method="post" action="{% url 'login' %}">
+        {% csrf_token %}
+        
+        <div class="mb-4">
+            <label for="id_username" class="form-label fw-semibold">
+                <i class="fas fa-user me-2"></i>Username
+            </label>
+            <input type="text" 
+                   name="username" 
+                   id="id_username" 
+                   class="form-control form-control-lg" 
+                   placeholder="Enter your username"
+                   required 
+                   autofocus>
+        </div>
+
+        <div class="mb-4">
+            <label for="id_password" class="form-label fw-semibold">
+                <i class="fas fa-lock me-2"></i>Password
+            </label>
+            <input type="password" 
+                   name="password" 
+                   id="id_password" 
+                   class="form-control form-control-lg" 
+                   placeholder="Enter your password"
+                   required>
+        </div>
+
+        <input type="hidden" name="next" value="{{ next }}">
+
+        <button type="submit" class="btn btn-primary w-100 btn-lg mb-3">
+            <i class="fas fa-sign-in-alt me-2"></i>Login
+        </button>
+
+        <div class="text-center">
+            <p class="text-muted mb-0">
+                Don't have an account? 
+                <a href="{% url 'search:register' %}" class="text-decoration-none fw-semibold" style="color: var(--primary-color);">
+                    Register here
+                </a>
+            </p>
+        </div>
+    </form>
+</div>
+{% endblock %}
