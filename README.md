@@ -15,8 +15,7 @@ Information Retrieval Search Engine with bilingual support (English & Amharic)
 2. MAREY GASHAW - 1226/16
 3. WONDATIR FETENE - 2003/16
 4. MEAZA WONDYE - 1252/16
-5. HUSEN ALI - 1071/16
-6. HAYMANOT FENTAW - 1021/16
+5. HAYMANOT FENTAW - 1021/16
 
 ## Quick Start
 
